@@ -44,7 +44,7 @@ int GenericPlatform::updateDrive() {
     driveSystem.stop();
     return totalDistance;
   }
-  
+
   int leftPWM  = constrain(BASE_PWM - correction, 0, 255);
   int rightPWM = constrain(BASE_PWM + correction, 0, 255);
 

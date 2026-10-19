@@ -1,13 +1,10 @@
 #include "GenericPlatform.h"
 
-#define BASE_PWM 100
-#define KP 50
-#define V_BASE_CMPS 20.0f
+#define BASE_PWM 127
+#define KP 40
+#define V_BASE_CMPS 1.0f
 
-
-using namespace std;
-
-static uint16_t getDistance(uint8_t ir) {
+static int16_t getDistance(uint8_t ir) {
   switch (ir) {
     case 16: return 497;
     case 15: return 0;
@@ -19,8 +16,7 @@ static uint16_t getDistance(uint8_t ir) {
     case 3:  return 295;
     case 2:  return 102;
     case 1:  return 0;
-    case 0:  return 1000;
-    default: return 0;
+    default: return -1;
   }
 }
 GenericPlatform::GenericPlatform(
@@ -53,16 +49,11 @@ void GenericPlatform::begin() {
 
 float GenericPlatform::updateDrive() {
   unsigned long currentTime = millis();
-  static unsigned long lastLoopTime = 0;
+  static unsigned long lastLoopTime = millis();
 
-  if (lastLoopTime == 0) {
-    lastLoopTime = currentTime;
-    return distanceTravelled;
-  }
   float dt = (currentTime - lastLoopTime) / 1000.0f;
   int correction = KP * lineFollower.update();
-  Serial.print(F("Correction: "));
-  Serial.println(correction);
+  lastLoopTime = currentTime;
 
   if (correction / KP == 2) {
     Serial.println(F("Line lost! Stopping."));
@@ -70,16 +61,14 @@ float GenericPlatform::updateDrive() {
     return distanceTravelled;
   }
 
-  int leftPWM = constrain(BASE_PWM - correction, 0, 255);
-  int rightPWM = constrain(BASE_PWM + correction, 0, 255);
+  int leftPWM = constrain(BASE_PWM - correction, 50, 255);
+  int rightPWM = constrain(BASE_PWM + correction, 50, 255);
 
   float vL = V_BASE_CMPS * ((float)leftPWM / BASE_PWM);
   float vR = V_BASE_CMPS * ((float)rightPWM / BASE_PWM);
 
-  // Serial.print(F("Left PWM: "));
-  // Serial.print(leftPWM);
-  // Serial.print(F(", Right PWM: "));
-  // Serial.print(rightPWM);
+  // Serial.print(F("dt: "));
+  // Serial.print(dt);
   // Serial.print(F(", vL: "));
   // Serial.print(vL);
   // Serial.print(F(", vR: "));
@@ -107,7 +96,9 @@ void GenericPlatform::sendMessage(
   const String& to, const String& type,
   int x, int angle
 ) {
-  comunication.sendMessage(to, type, x, angle);
+  static int counter = 0;
+  comunication.sendMessage(to, type, x, angle, counter);
+  counter++;
 }
 
 float GenericPlatform::checkSonicDistance() {
@@ -116,7 +107,13 @@ float GenericPlatform::checkSonicDistance() {
 
 uint8_t GenericPlatform::updateIRReceiver() {
   int ir = irReceiver.update();
-  distanceTravelled = getDistance(ir);
+  // Serial.print(F("IR command received: "));
+  // Serial.println(ir);
+  if (getDistance(ir) != -1) {
+    distanceTravelled = getDistance(ir);
+  }
+
+  Serial.println(distanceTravelled);
   return ir;
 }
 

@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include "../../Generic/GenericPlatform/GenericPlatform.h"
 #include "../EnemyDetector/EnemyDetector.h"
-#include "../ServoScanner/ServoScanner.h"
+#include "../../Generic/ServoScanner/ServoScanner.h"
 
 class D9Platform {
 private:
@@ -23,7 +23,7 @@ public:
     );
 
     void begin();
-    void update();
+    void findEnemy();
     GenericPlatform& getGenericPlatform();
 };
 

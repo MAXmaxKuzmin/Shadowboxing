@@ -1,9 +1,21 @@
 #include "GenericPlatform.h"
 
+// Default motor speed used before line-following correction is applied.
 #define BASE_PWM 127
+
+// Proportional gain that converts line error into a motor-speed correction.
 #define KP 40
+
+// Estimated platform speed at the base PWM value, in centimetres per second.
 #define V_BASE_CMPS 1.0f
 
+// Minimum interval between periodic location messages, in milliseconds.
+#define LOC_INTERVAL 30000UL
+
+// Tracks whether location reporting is enabled by higher-level application code.
+bool locationReportingActive = false;
+
+// Converts a known IR marker value into the corresponding travelled distance.
 static int16_t getDistance(uint8_t ir) {
   switch (ir) {
     case 16: return 497;
@@ -19,6 +31,8 @@ static int16_t getDistance(uint8_t ir) {
     default: return -1;
   }
 }
+
+// Constructs the platform's motors, sensors, communication link, and state.
 GenericPlatform::GenericPlatform(
   uint8_t li1, uint8_t li2, uint8_t le,
   uint8_t ri1, uint8_t ri2, uint8_t re,
@@ -39,6 +53,7 @@ GenericPlatform::GenericPlatform(
     irReceiver(ir),
     distanceTravelled(0.0f) {}
 
+// Initializes every hardware subsystem used by the platform.
 void GenericPlatform::begin() {
   driveSystem.begin();
   lineFollower.begin();
@@ -47,12 +62,30 @@ void GenericPlatform::begin() {
   irReceiver.begin();
 }
 
+// Sends the current travelled distance when the reporting interval has elapsed.
+void GenericPlatform::sendLocationIfDue() {
+
+  static unsigned long lastLocationTime = 0;
+
+  unsigned long currentTime = millis();
+  if (currentTime - lastLocationTime >= LOC_INTERVAL) {
+    sendMessage(
+      "HML",
+      "LOCATION",
+      static_cast<int>(totalDistance()),
+      0
+    );
+    lastLocationTime = currentTime;
+  }
+}
+
+// Updates line-following control, estimates distance, and drives the motors.
 float GenericPlatform::updateDrive() {
   unsigned long currentTime = millis();
   static unsigned long lastLoopTime = millis();
 
-  float dt = (currentTime - lastLoopTime) / 1000.0f;
-  int correction = KP * lineFollower.update();
+
+  int8_t correction = KP * lineFollower.update();
   lastLoopTime = currentTime;
 
   if (correction / KP == 2) {
@@ -61,11 +94,15 @@ float GenericPlatform::updateDrive() {
     return distanceTravelled;
   }
 
-  int leftPWM = constrain(BASE_PWM - correction, 50, 255);
-  int rightPWM = constrain(BASE_PWM + correction, 50, 255);
+  uint8_t leftPWM = constrain(BASE_PWM - correction, 50, 255);
+  uint8_t rightPWM = constrain(BASE_PWM + correction, 50, 255);
 
   float vL = V_BASE_CMPS * ((float)leftPWM / BASE_PWM);
   float vR = V_BASE_CMPS * ((float)rightPWM / BASE_PWM);
+
+  float dt = (currentTime - lastLoopTime) / 1000.0f;
+
+  distanceTravelled += (vL + vR) * 0.5f * dt;
 
   // Serial.print(F("dt: "));
   // Serial.print(dt);
@@ -73,11 +110,8 @@ float GenericPlatform::updateDrive() {
   // Serial.print(vL);
   // Serial.print(F(", vR: "));
   // Serial.println(vR);
-
-  distanceTravelled += (vL + vR) * 0.5f * dt;
   // Serial.print(F("Distance travelled: "));
   // Serial.println(distanceTravelled);
-
   // Serial.print(F("Left PWM: "));
   // Serial.print(leftPWM);
   // Serial.print(F(", Right PWM: "));
@@ -88,10 +122,12 @@ float GenericPlatform::updateDrive() {
   return distanceTravelled;
 }
 
+// Reads and returns the next message received by the communication subsystem.
 String GenericPlatform::listen() {
   return comunication.listen();
 }
 
+// Sends a message and increments the message sequence counter.
 void GenericPlatform::sendMessage(
   const String& to, const String& type,
   int x, int angle
@@ -101,26 +137,45 @@ void GenericPlatform::sendMessage(
   counter++;
 }
 
+// Measures and returns the current distance reported by the ultrasonic sensor.
 float GenericPlatform::checkSonicDistance() {
   return sonic.readDistanceCm();
 }
 
-uint8_t GenericPlatform::updateIRReceiver() {
-  int ir = irReceiver.update();
-  // Serial.print(F("IR command received: "));
-  // Serial.println(ir);
+// Reads an IR marker and updates the travelled distance when it is recognized.
+int8_t GenericPlatform::updateIRReceiver() {
+  int8_t ir = irReceiver.update();
   if (getDistance(ir) != -1) {
+
+    // Replace the estimated distance with the calibrated marker distance.
     distanceTravelled = getDistance(ir);
   }
 
-  Serial.println(distanceTravelled);
   return ir;
 }
 
+// Immediately stops both drive motors.
 void GenericPlatform::stopDrive() {
   driveSystem.stop();
 }
 
+// Returns the platform's current estimated travelled distance.
 float GenericPlatform::totalDistance() {
   return distanceTravelled;
+}
+
+// Drives while processing communication and sensors until the target IR marker appears.
+void GenericPlatform::driveUntilFoundIR(byte targetIRValue) {
+  while (true) {
+    // Continue line following while servicing the platform's other subsystems.
+    updateDrive();
+    listen();
+    sendLocationIfDue();
+    int irValue = updateIRReceiver();
+    if (irValue == targetIRValue) {
+      // Stop as soon as the requested marker is detected.
+      stopDrive();
+      break;
+    }
+  }
 }

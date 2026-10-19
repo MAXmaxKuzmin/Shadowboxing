@@ -12,7 +12,7 @@ void Motor::begin() {
   stop();
 }
 
-void Motor::setSpeed(int speed) {
+void Motor::setSpeed(uint8_t speed) {
   speed = constrain(speed, 0, 255);
 
   if (speed > 0) {

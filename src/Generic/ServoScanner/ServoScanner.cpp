@@ -2,13 +2,11 @@
 
 ServoScanner::ServoScanner(
     uint8_t pin,
-    EnemyDetector& enemyDetector,
     uint8_t minimumAngle,
     uint8_t maximumAngle,
     uint16_t stepInterval
 )
-    : detector(enemyDetector),
-      servoPin(pin),
+    : servoPin(pin),
       angle(minimumAngle),
       minAngle(minimumAngle),
       maxAngle(maximumAngle),
@@ -30,12 +28,6 @@ void ServoScanner::begin() {
 
 void ServoScanner::update() {
     if (!running || threatDetected) return;
-
-    if (detector.detected()) {
-        threatDetected = true;
-        running = false;
-        return;
-    }
 
     unsigned long now = millis();
 
@@ -62,18 +54,15 @@ void ServoScanner::update() {
     servo.write(angle);
 }
 
-void ServoScanner::stop() {
-    running = false;
-}
-
-bool ServoScanner::isRunning() const {
-    return running;
-}
-
-bool ServoScanner::hasDetectedThreat() const {
-    return threatDetected;
-}
-
 uint8_t ServoScanner::getAngle() const {
     return angle;
+}
+
+void ServoScanner::moveToAngle(uint8_t targetAngle) {
+    if (targetAngle < minAngle || targetAngle > maxAngle) {
+        return; // Target angle is out of bounds
+    }
+
+    angle = targetAngle;
+    servo.write(angle);
 }

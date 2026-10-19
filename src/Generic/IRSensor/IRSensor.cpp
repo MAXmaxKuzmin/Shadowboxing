@@ -13,5 +13,5 @@ bool IRSensor::detectsLine() {
   Serial.print(pin);
   Serial.print(F(": "));
   Serial.println(analogRead(pin));
-  return static_cast<uint16_t>(analogRead(pin)) > threshold;
+  return analogRead(pin) > threshold;
 }

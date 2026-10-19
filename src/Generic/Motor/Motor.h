@@ -13,7 +13,7 @@ public:
   Motor(uint8_t pin1, uint8_t pin2, uint8_t enable);
 
   void begin();
-  void setSpeed(int speed);
+  void setSpeed(uint8_t speed);
   void stop();
 };
 

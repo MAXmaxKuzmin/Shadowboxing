@@ -27,7 +27,7 @@ float UltrasonicSensor::readDistanceCm() {
   digitalWrite(trigPin, LOW);
 
   // Read echo pulse; timeout after 30 ms
-  unsigned long duration = pulseIn(echoPin, HIGH, 30000UL);
+  uint16_t duration = pulseIn(echoPin, HIGH, 30000UL);
 
   // No echo received
   if (duration == 0) {

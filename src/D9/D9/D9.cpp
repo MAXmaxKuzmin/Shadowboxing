@@ -8,27 +8,23 @@ D9Platform::D9Platform(
 )
     : genericPlatform(basePlatform),
       enemyDetector(ldrPin, laserThreshold),
-      servoScanner(servoPin, enemyDetector),
+      servoScanner(servoPin),
       threatMessageSent(false) {}
 
 void D9Platform::begin() {
     genericPlatform.begin();
     enemyDetector.begin();
     servoScanner.begin();
-
-    threatMessageSent = false;
 }
 
-void D9Platform::update() {
-    if (threatMessageSent) return;
-
-     servoScanner.update();
-
-    if (servoScanner.hasDetectedThreat()) {
-        genericPlatform.sendMessage("HAMAL", "THREAT", D9Platform::genericPlatform.totalDistance(), servoScanner.getAngle());
-
-        threatMessageSent = true;
-        servoScanner.stop();
+void D9Platform::findEnemy() {
+    while (!threatMessageSent) {
+        servoScanner.update();
+        if (enemyDetector.detected()) {
+            genericPlatform.sendMessage("HAMAL", "THREAT", D9Platform::genericPlatform.totalDistance(), servoScanner.getAngle());
+            servoScanner.stop();
+            threatMessageSent = true;
+        }
     }
 }
 

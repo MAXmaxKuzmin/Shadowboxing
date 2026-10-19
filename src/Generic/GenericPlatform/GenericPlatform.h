@@ -23,13 +23,13 @@ private:
 
 public:
   GenericPlatform(
-    uint8_t leftIn1, uint8_t leftIn2, uint8_t leftEnable,
-    uint8_t rightIn1, uint8_t rightIn2, uint8_t rightEnable,
-    uint8_t leftIRPin, uint8_t rightIRPin,
-    uint8_t commTXD, uint8_t commRXD,
-    uint8_t sonicTrigPin, uint8_t sonicEchoPin,
-    uint8_t irReceiverPin,
-    uint16_t threshold, const String& name
+    const uint8_t leftIn1, const uint8_t leftIn2, const uint8_t leftEnable,
+    const uint8_t rightIn1, const uint8_t rightIn2, const uint8_t rightEnable,
+    const uint8_t leftIRPin, const uint8_t rightIRPin,
+    const uint8_t commTXD, const uint8_t commRXD,
+    const uint8_t sonicTrigPin, const uint8_t sonicEchoPin,
+    const uint8_t irReceiverPin,
+    const uint16_t threshold, const String& name
   );
 
   void begin();
@@ -39,8 +39,10 @@ public:
   void sendMessage(const String& to, const String& type,
                    int x, int angle);
   float checkSonicDistance();
-  uint8_t updateIRReceiver();
+  int8_t updateIRReceiver();
   float totalDistance();
+  void sendLocationIfDue();
+  void driveUntilFoundIR(byte targetIRValue);
 };
 
 #endif

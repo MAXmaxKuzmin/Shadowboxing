@@ -3,12 +3,10 @@
 
 #include <Arduino.h>
 #include <Servo.h>
-#include "../EnemyDetector/EnemyDetector.h"
 
 class ServoScanner {
 private:
     Servo servo;
-    EnemyDetector& detector;
 
     uint8_t servoPin;
     uint8_t angle;
@@ -25,7 +23,6 @@ private:
 public:
     ServoScanner(
         uint8_t pin,
-        EnemyDetector& enemyDetector,
         uint8_t minimumAngle = 0,
         uint8_t maximumAngle = 90,
         uint16_t stepInterval = 17
@@ -33,11 +30,8 @@ public:
 
     void begin();
     void update();
-    void stop();
-
-    bool isRunning() const;
-    bool hasDetectedThreat() const;
     uint8_t getAngle() const;
+    void moveToAngle(uint8_t targetAngle);
 };
 
 #endif

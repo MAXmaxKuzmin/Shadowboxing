@@ -15,13 +15,13 @@ void Comm::begin() {
   loraSerial.begin(9600);
 }
 
-void Comm::sendMessage(String to, String type, int x, int y, int angle) {
+void Comm::sendMessage(String to, String type, int x, int angle) {
+  static int counter = 0;
   String msg = (String)sender + "|" +
                (String)to + "|" +
                (String)type + "|" +
                String(x) + "|" +
-               String(y) + "|" +
-               String(angle);
+               String(angle) + "|" + String(counter++);
   loraSerial.println(msg);
 }
 
@@ -34,9 +34,10 @@ String Comm::listen() {
     if (to != this->sender && to != "ALL") {
       return "";
     }
+
     String type = message.substring(message.indexOf('|', message.indexOf('|') + 1) + 1, message.indexOf('|', message.indexOf('|', message.indexOf('|') + 1) + 1));
-    Serial.print("Received message: ");
-    Serial.println(type);
+    // Serial.print("Received message: ");
+    // Serial.println(type);
     return type;
   }
   return "";

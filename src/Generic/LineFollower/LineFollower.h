@@ -16,7 +16,7 @@ public:
     IRSensor& right
   );
 
-  byte update();
+  int8_t update();
 
   void begin();
 };

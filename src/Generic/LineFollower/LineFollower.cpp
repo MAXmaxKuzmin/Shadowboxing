@@ -8,7 +8,7 @@ LineFollower::LineFollower(
   : leftSensor(left),
     rightSensor(right) {}
 
-byte LineFollower::update() {
+int8_t LineFollower::update() {
   bool left = leftSensor.detectsLine();
   bool right = rightSensor.detectsLine();
 

@@ -9,8 +9,7 @@ private:
     uint8_t receivePin;
 
 public:
-    IRReceiver(uint8_t pin);
-
+    explicit IRReceiver(uint8_t pin);
     void begin();
     uint8_t update();
 };

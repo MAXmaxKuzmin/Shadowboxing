@@ -13,7 +13,7 @@ void Motor::begin() {
 }
 
 void Motor::setSpeed(int speed) {
-  speed = constrain(speed, -500, 500);
+  speed = constrain(speed, 0, 255);
 
   if (speed > 0) {
     digitalWrite(in1, HIGH);

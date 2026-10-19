@@ -1,0 +1,30 @@
+#ifndef D9_PLATFORM_H
+#define D9_PLATFORM_H
+
+#include <Arduino.h>
+#include "../../Generic/GenericPlatform/GenericPlatform.h"
+#include "../EnemyDetector/EnemyDetector.h"
+#include "../ServoScanner/ServoScanner.h"
+
+class D9Platform {
+private:
+    GenericPlatform& genericPlatform;
+    EnemyDetector enemyDetector;
+    ServoScanner servoScanner;
+
+    bool threatMessageSent;
+
+public:
+    D9Platform(
+        GenericPlatform& basePlatform,
+        uint8_t ldrPin,
+        uint16_t laserThreshold,
+        uint8_t servoPin
+    );
+
+    void begin();
+    void update();
+    GenericPlatform& getGenericPlatform();
+};
+
+#endif

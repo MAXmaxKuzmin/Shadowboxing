@@ -19,27 +19,28 @@ private:
   Comm comunication;
   UltrasonicSensor sonic;
   IRReceiver irReceiver;
-
+  float distanceTravelled;
 
 public:
   GenericPlatform(
-    uint8_t  leftIn1, uint8_t  leftIn2, uint8_t  leftEnable,
-    uint8_t  rightIn1, uint8_t  rightIn2, uint8_t  rightEnable,
-    uint8_t  leftIRPin, uint8_t  rightIRPin,
-    uint8_t  commTXD, uint8_t  commRXD,
-    uint8_t  sonicTrigPin, uint8_t  sonicEchoPin,
-    uint8_t  irReceiverPin,
-    uint16_t threshold, String name
+    uint8_t leftIn1, uint8_t leftIn2, uint8_t leftEnable,
+    uint8_t rightIn1, uint8_t rightIn2, uint8_t rightEnable,
+    uint8_t leftIRPin, uint8_t rightIRPin,
+    uint8_t commTXD, uint8_t commRXD,
+    uint8_t sonicTrigPin, uint8_t sonicEchoPin,
+    uint8_t irReceiverPin,
+    uint16_t threshold, const String& name
   );
 
   void begin();
-  int updateDrive();
+  float updateDrive();
   void stopDrive();
   String listen();
-  void sendMessage(String to, String type, int x, int y, int angle);
+  void sendMessage(const String& to, const String& type,
+                   int x, int angle);
   float checkSonicDistance();
   uint8_t updateIRReceiver();
-
+  float totalDistance();
 };
 
 #endif

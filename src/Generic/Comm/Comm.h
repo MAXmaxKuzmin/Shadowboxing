@@ -20,7 +20,7 @@ public:
 
   void begin();
   String listen();
-  void sendMessage(String to, String type, int x, int y, int angle);
+  void sendMessage(String to, String type, int x, int angle);
 };
 
 #endif

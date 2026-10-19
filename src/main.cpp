@@ -11,13 +11,13 @@ const unsigned long messageInterval = 10000;
 // Right motor: IN1=9, IN2=10, EN=6
 // IR sensors: left=A0, right=A1, lora communication: TX=12, RX=11
 // Sonic sensor: TRIG=3, ECHO=5, IR receiver: 6
-// The threshold for line detection is set to 200 (for analog sensors).
+// The threshold for line detection is set to 512 (for analog sensors).
 GenericPlatform platform(
-  7, 8, 5,
   7, 8, 6,
-  A4, A5, 2, 3,
+  7, 8, 5,
+  A5, A4, 2, 3,
   13, 12, 4,
-  200, "NAG"
+  300 , "NAG"
 );
 
 void setup() {
@@ -37,6 +37,7 @@ void loop() {;
   // }
   //platform.listen();
   platform.updateDrive();
+  platform.updateIRReceiver();
   // if (millis() - lastMessageTime >= messageInterval) {
   //   //platform.sendMessage("HML", "DIST", totalDistance, 0, 0);
   //   Serial.print("Total Distance: ");

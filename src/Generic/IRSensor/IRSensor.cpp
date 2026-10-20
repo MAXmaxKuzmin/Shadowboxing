@@ -9,9 +9,9 @@ void IRSensor::begin() {
 }
 
 bool IRSensor::detectsLine() {
-  Serial.print(F("Sensor reading on pin "));
-  Serial.print(pin);
-  Serial.print(F(": "));
-  Serial.println(analogRead(pin));
+  // Serial.print(F("Sensor reading on pin "));
+  // Serial.print(pin);
+  // Serial.print(F(": "));
+  // Serial.println(analogRead(pin));
   return analogRead(pin) > threshold;
 }

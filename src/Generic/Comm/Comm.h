@@ -21,6 +21,7 @@ public:
   void begin();
   String listen();
   void sendMessage(String to, String type, int x, int angle, int counter);
+  SoftwareSerial GetLoraSerial();
 };
 
 #endif

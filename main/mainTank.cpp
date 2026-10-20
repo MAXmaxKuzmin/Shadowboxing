@@ -68,29 +68,22 @@ void loop() {
         tank.getGenericPlatform().sendLocationIfDue();
       }
       if (command == "") {
-          delay(1000); // No message received, wait a bit before listening again
+          delay(100); // No message received, wait a bit before listening again
           continue; // No message received, continue listening
       }
       firstMove = true;
       String type = command.substring(0, command.indexOf('|'));
-      String x = command.substring(command.indexOf('|') + 1, command.lastIndexOf('|'));
-      String angle = command.substring(command.lastIndexOf('|') + 1);
-      tank.getGenericPlatform().driveUntilFoundIR(x.toInt());
-      tank.shoot(angle.toInt());
-
-      if (mission == NORTH && x.toInt() == LAST_NORTH_IR) {
+      if (type == "THREAT") {
+        MoveNotStarted = false;
+        String x = command.substring(command.indexOf('|') + 1, command.lastIndexOf('|'));
+        String angle = command.substring(command.lastIndexOf('|') + 1);
+        tank.getGenericPlatform().driveUntilFoundIR(x.toInt());
+        tank.shoot(angle.toInt());
+      } else if (type == "GO") {
         foundAllThreats = true;
-        northLoop();
-      } else if (mission == SOUTH && x.toInt() == LAST_SOUTH_IR) {
-        foundAllThreats = true;
-        southLoop();
       }
     }
-}
-void northLoop() {
-
-    }
-
-void southLoop() {
+    tank.getGenericPlatform().driveUntilTheEnd();
+    tank.getGenericPlatform().endMission();
 
 }

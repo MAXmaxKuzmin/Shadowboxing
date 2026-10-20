@@ -67,6 +67,12 @@ void ServoScanner::moveToAngle(uint8_t targetAngle) {
     servo.write(angle);
 }
 
+void ServoScanner::openBridge() {
+    moveToAngle(maxAngle);
+    delay(1000); // Wait for the bridge to fully open
+    moveToAngle(minAngle); // Return to the initial position
+}
+
 void ServoScanner::stop() {
     running = false;
 }

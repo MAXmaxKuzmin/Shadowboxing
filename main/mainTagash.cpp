@@ -8,6 +8,8 @@ bool missionNotStarted = true;
 // Keeps the program waiting for the command to begin movement.
 bool MoveNotStarted = true;
 
+bool finished = false;
+
 // Identifies the two possible mission routes.
 enum Mission {
   NORTH,
@@ -49,7 +51,20 @@ void loop() {
         missionNotStarted = false;
     }
 
-    tagash.getGenericPlatform().driveUntilFoundIR(1);
-    tagash.openBridge();
+    // Wait until the hamal authorizes the platform to start moving.
+    while(MoveNotStarted) {
+      String command = tagash.getGenericPlatform().listen();
+      String type = command.substring(0, command.indexOf('|'));
+      if (type == "GO") {
+        MoveNotStarted = false;
+      }
+    }
+
+    if (!finished) {
+        tagash.getGenericPlatform().driveUntilFoundIR(1);
+        tagash.openBridge();
+        finished = true;
+        tagash.getGenericPlatform().sendMessage("HML", "FIN", 0, 0);
+    }
 }
 }

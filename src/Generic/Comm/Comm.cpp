@@ -24,11 +24,13 @@ void Comm::sendMessage(String to, String type, int x, int angle, int counter) {
                String(x) + "|" +
                String(angle) + "|" + String(counter);
   loraSerial.println(msg);
+  while (Comm::listen().startsWith("ACK") == false) {
+  }
+
 }
 
 // Reads available messages, acknowledges addressed messages, and returns their type.
 String Comm::listen() {
-
   // Process every complete line currently buffered by the serial connection.
   while (loraSerial.available()) {
     String message = loraSerial.readStringUntil('\n');
@@ -37,6 +39,11 @@ String Comm::listen() {
     String from = message.substring(0, message.indexOf('|'));
     String to = message.substring(message.indexOf('|') + 1, message.indexOf('|', message.indexOf('|') + 1));
     String type = message.substring(message.indexOf('|', message.indexOf('|') + 1) + 1, message.indexOf('|', message.indexOf('|', message.indexOf('|') + 1) + 1));
+
+    if (type == "STOP") {
+      return "STOP";
+    }
+
     String xStr = message.substring(message.indexOf('|', message.indexOf('|', message.indexOf('|') + 1) + 1) + 1, message.indexOf('|', message.indexOf('|', message.indexOf('|', message.indexOf('|') + 1) + 1) + 1));
     uint16_t x = xStr.toInt();
     String angleStr = message.substring(message.indexOf('|', message.indexOf('|', message.indexOf('|', message.indexOf('|') + 1) + 1) + 1) + 1, message.indexOf('|', message.indexOf('|', message.indexOf('|', message.indexOf('|', message.indexOf('|') + 1) + 1) + 1) + 1) + 1);
@@ -59,4 +66,8 @@ String Comm::listen() {
 
   // Report that no complete message is currently available.
   return "";
+}
+
+SoftwareSerial Comm::GetLoraSerial() {
+  return loraSerial;
 }

@@ -24,6 +24,7 @@ public:
 
     void begin();
     void findEnemy();
+    void tow();
     GenericPlatform& getGenericPlatform();
 };
 

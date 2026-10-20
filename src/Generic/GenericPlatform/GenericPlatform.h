@@ -43,6 +43,8 @@ public:
   float totalDistance();
   void sendLocationIfDue();
   void driveUntilFoundIR(byte targetIRValue);
+  void endMission();
+  void driveUntilTheEnd();
 };
 
 #endif

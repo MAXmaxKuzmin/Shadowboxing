@@ -21,11 +21,15 @@ void D9Platform::findEnemy() {
     while (!threatMessageSent) {
         servoScanner.update();
         if (enemyDetector.detected()) {
-            genericPlatform.sendMessage("HAMAL", "THREAT", D9Platform::genericPlatform.totalDistance(), servoScanner.getAngle());
+            genericPlatform.sendMessage("TNK", "THREAT", D9Platform::genericPlatform.totalDistance(), servoScanner.getAngle());
             servoScanner.stop();
             threatMessageSent = true;
         }
     }
+}
+
+void D9Platform::tow() {
+    servoScanner.moveToAngle(90);
 }
 
 GenericPlatform& D9Platform::getGenericPlatform() {

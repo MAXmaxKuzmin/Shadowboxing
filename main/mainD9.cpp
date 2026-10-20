@@ -61,7 +61,7 @@ void loop() {
     while(MoveNotStarted) {
       String command = d9.getGenericPlatform().listen();
       String type = command.substring(0, command.indexOf('|'));
-      if (type == "FIN") {
+      if (type == "GO") {
         MoveNotStarted = false;
       }
     }
@@ -77,19 +77,8 @@ void loop() {
 void northLoop() {
   d9.getGenericPlatform().driveUntilFoundIR(2);
   d9.findEnemy();
-
-  d9.getGenericPlatform().updateDrive();
-  d9.getGenericPlatform().listen();
-  d9.getGenericPlatform().sendLocationIfDue();
-
-  // Notify the controller that the northbound mission is complete.
-  d9.getGenericPlatform().sendMessage("HML", "FIN", 0, 0);
-
-// Remain available for incoming messages while periodically reporting location.
-while (true) {
-    d9.getGenericPlatform().listen();
-    d9.getGenericPlatform().sendLocationIfDue();
-}
+  d9.getGenericPlatform().driveUntilFoundIR(4);
+  d9.getGenericPlatform().endMission();
 }
 
 void southLoop() {
@@ -97,16 +86,7 @@ void southLoop() {
     d9.findEnemy();
     d9.getGenericPlatform().driveUntilFoundIR(13);
     d9.findEnemy();
-    //d9.Tow();
+    d9.tow();
     d9.getGenericPlatform().driveUntilFoundIR(16);
-    //d9.mignan();
-
-    // Notify the controller that the southbound mission is complete.
-    d9.getGenericPlatform().sendMessage("HML", "FIN", 0, 0);
-
-    // Remain available for incoming messages while periodically reporting location.
-    while (true) {
-        d9.getGenericPlatform().listen();
-        d9.getGenericPlatform().sendLocationIfDue();
-    }
+    d9.getGenericPlatform().endMission();
 }

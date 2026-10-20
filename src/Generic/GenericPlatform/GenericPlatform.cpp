@@ -1,10 +1,10 @@
 #include "GenericPlatform.h"
 
 // Default motor speed used before line-following correction is applied.
-#define BASE_PWM 220
+#define BASE_PWM 127
 
 // Proportional gain that converts line error into a motor-speed correction.
-#define KP 60
+#define KP 100
 
 // Estimated platform speed at the base PWM value, in centimetres per second.
 #define V_BASE_CMPS 1.0f
@@ -71,7 +71,7 @@ void GenericPlatform::sendLocationIfDue() {
   if (currentTime - lastLocationTime >= LOC_INTERVAL) {
     sendMessage(
       "HML",
-      "LOCATION",
+      "POSITION",
       static_cast<int>(totalDistance()),
       0
     );
@@ -84,25 +84,38 @@ float GenericPlatform::updateDrive() {
   unsigned long currentTime = millis();
   static unsigned long lastLoopTime = millis();
 
-
-  int8_t correction = KP * lineFollower.update();
-  lastLoopTime = currentTime;
-
-  if (correction / KP == 2) {
+  int sensors = lineFollower.update();
+  if (sensors == 2) {
     Serial.println(F("Line lost! Stopping."));
     driveSystem.stop();
     return distanceTravelled;
   }
 
-  uint8_t leftPWM = constrain(BASE_PWM - correction, 50, 255);
-  uint8_t rightPWM = constrain(BASE_PWM + correction, 50, 255);
+  int8_t correction = KP * sensors;
+  float dt = (currentTime - lastLoopTime) / 1000.0f;
+  lastLoopTime = currentTime;
+
+  uint8_t leftPWM = constrain(BASE_PWM - correction, 80, 255);
+  uint8_t rightPWM = constrain(BASE_PWM + correction, 80, 255);
+
+  Serial.print(F("Left PWM: "));
+  Serial.print(leftPWM);
+  Serial.print(F(", Right PWM: "));
+  Serial.println(rightPWM);
 
   float vL = V_BASE_CMPS * ((float)leftPWM / BASE_PWM);
   float vR = V_BASE_CMPS * ((float)rightPWM / BASE_PWM);
-
-  float dt = (currentTime - lastLoopTime) / 1000.0f;
+  Serial.print(F("vL: "));
+  Serial.print(vL, 2);
+  Serial.print(F(", vR: "));
+  Serial.println(vR, 2);
 
   distanceTravelled += (vL + vR) * 0.5f * dt;
+
+
+  String message = "vL: " + String(vL, 2) + ", vR: " + String(vR, 2) + ", dt: " + String(dt, 3);
+
+  comunication.GetLoraSerial().println(message);
 
   // Serial.print(F("dt: "));
   // Serial.print(dt);
@@ -124,7 +137,9 @@ float GenericPlatform::updateDrive() {
 
 // Reads and returns the next message received by the communication subsystem.
 String GenericPlatform::listen() {
-
+  if (comunication.listen().startsWith("STOP")) {
+    endMission();
+  }
   return comunication.listen();
 }
 
@@ -177,6 +192,35 @@ void GenericPlatform::driveUntilFoundIR(byte targetIRValue) {
       // Stop as soon as the requested marker is detected.
       stopDrive();
       break;
+    }
+  }
+}
+
+void GenericPlatform::endMission() {
+  // Stop the drive motors.
+  stopDrive();
+
+  // Send a message to the controller indicating that the mission has ended.
+  sendMessage("HML", "FIN", 0, 0);
+
+  // Remain available for incoming messages while periodically reporting location.
+  while (true) {
+    listen();
+    sendLocationIfDue();
+  }
+}
+
+void GenericPlatform::driveUntilTheEnd() {
+  bool running = true;
+  while (running) {
+    // Continue line following while servicing the platform's other subsystems.
+    updateDrive();
+    listen();
+    sendLocationIfDue();
+    if (checkSonicDistance() < 10.0f) {
+      // Stop as soon as an obstacle is detected within 10 cm.
+      stopDrive();
+      running = false;
     }
   }
 }

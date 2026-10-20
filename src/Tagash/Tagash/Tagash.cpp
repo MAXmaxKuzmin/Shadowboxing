@@ -13,7 +13,7 @@ void TagashPlatform::begin() {
 }
 
 void TagashPlatform::openBridge() {
-    servoScanner.moveToAngle(90);
+    servoScanner.openBridge();
 }
 
 GenericPlatform& TagashPlatform::getGenericPlatform() {

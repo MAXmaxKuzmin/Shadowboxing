@@ -77,6 +77,7 @@ void loop() {
 void northLoop() {
   d9.getGenericPlatform().driveUntilFoundIR(2);
   d9.findEnemy();
+
   d9.getGenericPlatform().updateDrive();
   d9.getGenericPlatform().listen();
   d9.getGenericPlatform().sendLocationIfDue();

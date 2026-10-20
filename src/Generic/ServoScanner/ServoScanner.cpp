@@ -66,3 +66,7 @@ void ServoScanner::moveToAngle(uint8_t targetAngle) {
     angle = targetAngle;
     servo.write(angle);
 }
+
+void ServoScanner::stop() {
+    running = false;
+}

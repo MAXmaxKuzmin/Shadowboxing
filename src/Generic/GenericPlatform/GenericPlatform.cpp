@@ -1,10 +1,10 @@
 #include "GenericPlatform.h"
 
 // Default motor speed used before line-following correction is applied.
-#define BASE_PWM 127
+#define BASE_PWM 220
 
 // Proportional gain that converts line error into a motor-speed correction.
-#define KP 40
+#define KP 60
 
 // Estimated platform speed at the base PWM value, in centimetres per second.
 #define V_BASE_CMPS 1.0f
@@ -124,6 +124,7 @@ float GenericPlatform::updateDrive() {
 
 // Reads and returns the next message received by the communication subsystem.
 String GenericPlatform::listen() {
+
   return comunication.listen();
 }
 

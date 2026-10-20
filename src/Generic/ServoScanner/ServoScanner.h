@@ -32,6 +32,7 @@ public:
     void update();
     uint8_t getAngle() const;
     void moveToAngle(uint8_t targetAngle);
+    void stop();
 };
 
 #endif

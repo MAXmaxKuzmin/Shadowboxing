@@ -49,8 +49,10 @@ String Comm::listen() {
       return "";
     }
 
-    // Confirm receipt using the original message values and return its message type.
-    sendMessage(from, "ACK", x, angle, counter);
+    if (type != "ACK" && type != "STOP") {
+      // Confirm receipt using the original message values and return its message type.
+      sendMessage(from, "ACK", x, angle, counter);
+    }
 
     return type + "|" + String(x) + "|" + String(angle);
   }

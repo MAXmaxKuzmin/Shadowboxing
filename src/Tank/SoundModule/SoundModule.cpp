@@ -6,6 +6,9 @@ SoundModule::SoundModule(uint8_t micPin, uint8_t thresholdValue)
 
 void SoundModule::begin() {
     pinMode(micPin, INPUT);
+    int firstReading = analogRead(micPin);
+    int minValue = firstReading;
+    int maxValue = firstReading;
 }
 
 bool SoundModule::checkForSound() {

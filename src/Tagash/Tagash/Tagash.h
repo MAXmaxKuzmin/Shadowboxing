@@ -9,12 +9,14 @@
 class TagashPlatform {
 private:
     GenericPlatform& genericPlatform;
-    ServoScanner servoScanner;
+    Motor motor;
 
 public:
     TagashPlatform(
         GenericPlatform& basePlatform,
-        uint8_t servoPin
+        uint8_t EN,
+        uint8_t IN1,
+        uint8_t IN2
     );
 
     void begin();

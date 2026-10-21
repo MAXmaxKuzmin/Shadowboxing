@@ -14,6 +14,7 @@ public:
 
   void begin();
   void setSpeed(uint8_t speed);
+  bool openBridge();
   void stop();
 };
 

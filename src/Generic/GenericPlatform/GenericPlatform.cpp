@@ -137,7 +137,7 @@ float GenericPlatform::updateDrive() {
 
 // Reads and returns the next message received by the communication subsystem.
 String GenericPlatform::listen() {
-  if (comunication.listen().startsWith("STOP")) {
+  if (comunication.listen() == "STOP") {
     endMission();
   }
   return comunication.listen();
@@ -185,7 +185,7 @@ void GenericPlatform::driveUntilFoundIR(byte targetIRValue) {
   while (true) {
     // Continue line following while servicing the platform's other subsystems.
     updateDrive();
-    listen();
+    String message = listen();
     sendLocationIfDue();
     int irValue = updateIRReceiver();
     if (irValue == targetIRValue) {

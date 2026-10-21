@@ -20,17 +20,20 @@ enum Mission {
 // Sonic sensor: TRIG=13, ECHO=12, IR receiver: 4
 // The threshold for line detection is set to 200 (for analog sensors).
 
-GenericPlatform basePlatform(
-  7, 8, 6, //Left motor
-  7, 8, 5, //Right motor
-  A5, A4, 9, 10, //Ir analog and Lora
-  13, 12, 4, //Ultrasonic and IR receiver
-  300 , "NAG" //Threshold and name
+GenericPlatform platform(
+  7, 8, 6, //Left motor IN1, IN2, EN
+  7, 8, 5, //Right motor IN1, IN2, EN
+  A4, A5, //IR sensors, left, right
+  9, 10, //Lora TX, RX
+  11, 12, //Ultrasonic TRIG, ECHO
+  12, //IR receiver
+  300, //Threshold
+  "NAG" //name
 );
 
 // Add the D9-specific sensors and actuators to the shared platform.
 NagmashPlatform nagmash(
-    basePlatform,
+    platform,
     9, // MP3 TX pin
     10, // MP3 RX pin
     11 // Servo pin
@@ -42,11 +45,35 @@ void setup() {
     nagmash.begin();
 }
 
+void northLoop() {
+  nagmash.getGenericPlatform().driveUntilFoundIR(2);
+  nagmash.bomb();
+  nagmash.getGenericPlatform().driveUntilFoundIR(4);
+  nagmash.getGenericPlatform().endMission();
+}
+
+void southLoop() {
+    // nagmash.mp3Play();
+    nagmash.getGenericPlatform().driveUntilFoundIR(11);
+    // nagmash.bomb();
+    delay(2000);
+    nagmash.getGenericPlatform().driveUntilFoundIR(13);
+    delay(2000);
+    nagmash.mp3Stop();
+    nagmash.getGenericPlatform().endMission();
+}
+
+
+
 void loop() {
 
     // Wait until the hamal selects the north or south mission.
     while(missionNotStarted) {
       String command = nagmash.getGenericPlatform().listen();
+      if (nagmash.getGenericPlatform().needToStop()) {
+        nagmash.getGenericPlatform().endMission();
+        break;
+      }
       String type = command.substring(0, command.indexOf('|'));
       if (type == "NORTH") {
         mission = NORTH;
@@ -56,10 +83,13 @@ void loop() {
         missionNotStarted = false;
       }
     }
-
     // Wait until the hamal authorizes the platform to start moving.
     while(MoveNotStarted) {
       String command = nagmash.getGenericPlatform().listen();
+      if (nagmash.getGenericPlatform().needToStop()) {
+        nagmash.getGenericPlatform().endMission();
+        break;
+      }
       String type = command.substring(0, command.indexOf('|'));
       if (type == "GO") {
         MoveNotStarted = false;
@@ -74,18 +104,3 @@ void loop() {
     }
 }
 
-void northLoop() {
-  nagmash.getGenericPlatform().driveUntilFoundIR(2);
-  nagmash.bomb();
-  nagmash.getGenericPlatform().driveUntilFoundIR(4);
-  nagmash.getGenericPlatform().endMission();
-}
-
-void southLoop() {
-    nagmash.mp3Play();
-    nagmash.getGenericPlatform().driveUntilFoundIR(11);
-    nagmash.bomb();
-    nagmash.getGenericPlatform().driveUntilFoundIR(13);
-    nagmash.mp3Stop();
-    nagmash.getGenericPlatform().endMission();
-}

@@ -1,16 +1,16 @@
 #include "GenericPlatform.h"
 
 // Default motor speed used before line-following correction is applied.
-#define BASE_PWM 127
+#define BASE_PWM 200
 
 // Proportional gain that converts line error into a motor-speed correction.
-#define KP 100
+#define KP 140
 
 // Estimated platform speed at the base PWM value, in centimetres per second.
-#define V_BASE_CMPS 1.0f
+#define V_BASE_CMPS 12.0f
 
 // Minimum interval between periodic location messages, in milliseconds.
-#define LOC_INTERVAL 30000UL
+#define LOC_INTERVAL 5000UL
 
 // Tracks whether location reporting is enabled by higher-level application code.
 bool locationReportingActive = false;
@@ -51,7 +51,8 @@ GenericPlatform::GenericPlatform(
     comunication(tx, rx, name),
     sonic(trig, echo),
     irReceiver(ir),
-    distanceTravelled(0.0f) {}
+    distanceTravelled(0.0f),
+    stop(false) {}
 
 // Initializes every hardware subsystem used by the platform.
 void GenericPlatform::begin() {
@@ -83,53 +84,34 @@ void GenericPlatform::sendLocationIfDue() {
 float GenericPlatform::updateDrive() {
   unsigned long currentTime = millis();
   static unsigned long lastLoopTime = millis();
-
-  int sensors = lineFollower.update();
-  if (sensors == 2) {
-    Serial.println(F("Line lost! Stopping."));
-    driveSystem.stop();
-    return distanceTravelled;
-  }
-
-  int8_t correction = KP * sensors;
   float dt = (currentTime - lastLoopTime) / 1000.0f;
   lastLoopTime = currentTime;
 
-  uint8_t leftPWM = constrain(BASE_PWM - correction, 80, 255);
-  uint8_t rightPWM = constrain(BASE_PWM + correction, 80, 255);
+  int sensors = lineFollower.update();
+  if (sensors == 2) {
+    return distanceTravelled;
+  }
+  int m = checkSonicDistance();
+  while(m < 3) {
+    driveSystem.stop();
+  }
 
-  Serial.print(F("Left PWM: "));
-  Serial.print(leftPWM);
-  Serial.print(F(", Right PWM: "));
-  Serial.println(rightPWM);
+  uint8_t leftPWM;
+  uint8_t rightPWM;
+  if (sensors == 0) {
+    rightPWM = BASE_PWM;
+    leftPWM = BASE_PWM;
+  } else if (sensors == -1) {
+    rightPWM = BASE_PWM;
+    leftPWM = 1;
+  } else if (sensors == 1) {
 
+    rightPWM = 1;
+    leftPWM = BASE_PWM;
+  }
   float vL = V_BASE_CMPS * ((float)leftPWM / BASE_PWM);
   float vR = V_BASE_CMPS * ((float)rightPWM / BASE_PWM);
-  Serial.print(F("vL: "));
-  Serial.print(vL, 2);
-  Serial.print(F(", vR: "));
-  Serial.println(vR, 2);
-
   distanceTravelled += (vL + vR) * 0.5f * dt;
-
-
-  String message = "vL: " + String(vL, 2) + ", vR: " + String(vR, 2) + ", dt: " + String(dt, 3);
-
-  comunication.GetLoraSerial().println(message);
-
-  // Serial.print(F("dt: "));
-  // Serial.print(dt);
-  // Serial.print(F(", vL: "));
-  // Serial.print(vL);
-  // Serial.print(F(", vR: "));
-  // Serial.println(vR);
-  // Serial.print(F("Distance travelled: "));
-  // Serial.println(distanceTravelled);
-  // Serial.print(F("Left PWM: "));
-  // Serial.print(leftPWM);
-  // Serial.print(F(", Right PWM: "));
-  // Serial.println(rightPWM);
-
 
   driveSystem.drive(leftPWM, rightPWM);
   return distanceTravelled;
@@ -137,10 +119,11 @@ float GenericPlatform::updateDrive() {
 
 // Reads and returns the next message received by the communication subsystem.
 String GenericPlatform::listen() {
-  if (comunication.listen() == "STOP") {
-    endMission();
+  String message = comunication.listen();
+  if (message == "STOP") {
+    stop = true;
   }
-  return comunication.listen();
+  return message;
 }
 
 // Sends a message and increments the message sequence counter.
@@ -162,7 +145,6 @@ float GenericPlatform::checkSonicDistance() {
 int8_t GenericPlatform::updateIRReceiver() {
   int8_t ir = irReceiver.update();
   if (getDistance(ir) != -1) {
-
     // Replace the estimated distance with the calibrated marker distance.
     distanceTravelled = getDistance(ir);
   }
@@ -185,9 +167,15 @@ void GenericPlatform::driveUntilFoundIR(byte targetIRValue) {
   while (true) {
     // Continue line following while servicing the platform's other subsystems.
     updateDrive();
-    String message = listen();
+    listen();
+    if (needToStop()) {
+      endMission();
+      break;
+    }
     sendLocationIfDue();
     int irValue = updateIRReceiver();
+    Serial.print("IR Value: ");
+    Serial.println(irValue);
     if (irValue == targetIRValue) {
       // Stop as soon as the requested marker is detected.
       stopDrive();
@@ -205,7 +193,6 @@ void GenericPlatform::endMission() {
 
   // Remain available for incoming messages while periodically reporting location.
   while (true) {
-    listen();
     sendLocationIfDue();
   }
 }
@@ -216,6 +203,9 @@ void GenericPlatform::driveUntilTheEnd() {
     // Continue line following while servicing the platform's other subsystems.
     updateDrive();
     listen();
+    if (needToStop()) {
+      endMission();
+    }
     sendLocationIfDue();
     if (checkSonicDistance() < 10.0f) {
       // Stop as soon as an obstacle is detected within 10 cm.
@@ -223,4 +213,8 @@ void GenericPlatform::driveUntilTheEnd() {
       running = false;
     }
   }
+}
+
+bool GenericPlatform::needToStop() {
+  return stop;
 }

@@ -16,10 +16,10 @@ void TagashPlatform::begin() {
 
 void TagashPlatform::openBridge() {
     while (!motor.openBridge()) {
-        String message = genericPlatform.listen();
-        if (message == "STOP") {
+        genericPlatform.listen();
+        if (genericPlatform.needToStop()) {
             motor.stop();
-            genericPlatform.
+            genericPlatform.endMission();
             break;
         }
         genericPlatform.sendLocationIfDue();

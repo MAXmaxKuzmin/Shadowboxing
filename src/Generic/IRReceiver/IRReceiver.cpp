@@ -14,7 +14,6 @@ void IRReceiver::begin() {
 uint8_t IRReceiver::update() {
     // Return the project-specific value 100 when no new command is available.
     if (!IrReceiver.decode()) return 100;
-
     // Read the command from the decoded IR data before accepting another signal.
     uint8_t command = IrReceiver.decodedIRData.command;
     IrReceiver.resume();

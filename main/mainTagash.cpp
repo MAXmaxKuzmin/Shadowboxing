@@ -33,7 +33,9 @@ GenericPlatform basePlatform(
 // Add the D9-specific sensors and actuators to the shared platform.
 TagashPlatform tagash(
     basePlatform,
-    9 // Servo pin
+    9,
+    7,
+    8
 );
 
 // Initializes serial diagnostics and all platform hardware.
@@ -46,6 +48,10 @@ void loop() {
     // Wait until the hamal selects the north or south mission.
     while(missionNotStarted) {
       String command = tagash.getGenericPlatform().listen();
+      if (tagash.getGenericPlatform().needToStop()) {
+        tagash.getGenericPlatform().endMission();
+        break;
+      }
       String type = command.substring(0, command.indexOf('|'));
       if (type == "NORTH") {
         missionNotStarted = false;
@@ -54,6 +60,10 @@ void loop() {
     // Wait until the hamal authorizes the platform to start moving.
     while(MoveNotStarted) {
       String command = tagash.getGenericPlatform().listen();
+      if (tagash.getGenericPlatform().needToStop()) {
+        tagash.getGenericPlatform().endMission();
+        break;
+      }
       String type = command.substring(0, command.indexOf('|'));
       if (type == "GO") {
         MoveNotStarted = false;

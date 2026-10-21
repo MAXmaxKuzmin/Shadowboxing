@@ -20,6 +20,7 @@ private:
   UltrasonicSensor sonic;
   IRReceiver irReceiver;
   float distanceTravelled;
+  bool stop;
 
 public:
   GenericPlatform(
@@ -45,6 +46,7 @@ public:
   void driveUntilFoundIR(byte targetIRValue);
   void endMission();
   void driveUntilTheEnd();
+  bool needToStop();
 };
 
 #endif

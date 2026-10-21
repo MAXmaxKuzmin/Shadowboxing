@@ -52,6 +52,10 @@ void loop() {
     // Wait until the hamal selects the north or south mission.
     while(missionNotStarted) {
       String command = tank.getGenericPlatform().listen();
+      if (tank.getGenericPlatform().needToStop()) {
+        tank.getGenericPlatform().endMission();
+        break;
+      }
       String type = command.substring(0, command.indexOf('|'));
       if (type == "NORTH") {
         mission = NORTH;
@@ -64,12 +68,16 @@ void loop() {
 
     while(!foundAllThreats) {
       String command = tank.getGenericPlatform().listen();
+      if (tank.getGenericPlatform().needToStop()) {
+        tank.getGenericPlatform().endMission();
+        break;
+      }
       if (firstMove) {
         tank.getGenericPlatform().sendLocationIfDue();
       }
       if (command == "") {
-          delay(100); // No message received, wait a bit before listening again
-          continue; // No message received, continue listening
+          delay(100);
+          continue;
       }
       firstMove = true;
       String type = command.substring(0, command.indexOf('|'));

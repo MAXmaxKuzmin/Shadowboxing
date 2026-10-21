@@ -47,6 +47,9 @@ void loop() {
     // Wait until the hamal selects the north or south mission.
     while(missionNotStarted) {
       String command = d9.getGenericPlatform().listen();
+      if (d9.getGenericPlatform().needToStop()) {
+        d9.getGenericPlatform().endMission();
+      }
       String type = command.substring(0, command.indexOf('|'));
       if (type == "NORTH") {
         mission = NORTH;
@@ -60,6 +63,10 @@ void loop() {
     // Wait until the hamal authorizes the platform to start moving.
     while(MoveNotStarted) {
       String command = d9.getGenericPlatform().listen();
+      if (d9.getGenericPlatform().needToStop()) {
+        d9.getGenericPlatform().endMission();
+        break;
+      }
       String type = command.substring(0, command.indexOf('|'));
       if (type == "GO") {
         MoveNotStarted = false;

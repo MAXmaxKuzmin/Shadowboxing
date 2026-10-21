@@ -24,7 +24,18 @@ void Comm::sendMessage(String to, String type, int x, int angle, int counter) {
                String(x) + "|" +
                String(angle) + "|" + String(counter);
   loraSerial.println(msg);
-  while (Comm::listen().startsWith("ACK") == false) {
+  if (type == "ACK") {
+    return;
+  }
+  bool ackReceived = false;
+  while (!ackReceived) {
+    String ack = Comm::listen();
+    if (ack == "STOP") {
+      break;
+    }
+    if (ack.startsWith("ACK")) {
+      ackReceived = true;
+    }
   }
 
 }
@@ -58,8 +69,11 @@ String Comm::listen() {
 
     if (type != "ACK" && type != "STOP") {
       // Confirm receipt using the original message values and return its message type.
+
       sendMessage(from, "ACK", x, angle, counter);
+
     }
+
 
     return type + "|" + String(x) + "|" + String(angle);
   }

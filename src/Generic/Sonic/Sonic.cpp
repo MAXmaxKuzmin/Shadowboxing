@@ -31,7 +31,7 @@ float UltrasonicSensor::readDistanceCm() {
 
   // No echo received
   if (duration == 0) {
-    lastDistance = -1.0;
+    lastDistance = 10000;
     return lastDistance;
   }
 

@@ -1,4 +1,3 @@
-
 #ifndef MP3_H
 #define MP3_H
 
@@ -10,6 +9,7 @@ class MP3 {
 private:
   SoftwareSerial mySoftwareSerial;
   DFRobotDFPlayerMini myDFPlayer;
+  bool initialized;
 
 public:
   MP3(uint8_t txdPin, uint8_t rxdPin);

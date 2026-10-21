@@ -25,7 +25,7 @@ GenericPlatform platform(
   7, 8, 5, //Right motor IN1, IN2, EN
   A4, A5, //IR sensors, left, right
   9, 10, //Lora TX, RX
-  11, 12, //Ultrasonic TRIG, ECHO
+  13, 4, //Ultrasonic TRIG, ECHO
   12, //IR receiver
   300, //Threshold
   "NAG" //name
@@ -34,10 +34,11 @@ GenericPlatform platform(
 // Add the D9-specific sensors and actuators to the shared platform.
 NagmashPlatform nagmash(
     platform,
-    9, // MP3 TX pin
-    10, // MP3 RX pin
-    11 // Servo pin
+    2, // MP3 TX pin
+    3, // MP3 RX pin
+    10 // Servo pin
 );
+
 
 // Initializes serial diagnostics and all platform hardware.
 void setup() {
@@ -66,41 +67,9 @@ void southLoop() {
 
 
 void loop() {
-
-    // Wait until the hamal selects the north or south mission.
-    while(missionNotStarted) {
-      String command = nagmash.getGenericPlatform().listen();
-      if (nagmash.getGenericPlatform().needToStop()) {
-        nagmash.getGenericPlatform().endMission();
-        break;
-      }
-      String type = command.substring(0, command.indexOf('|'));
-      if (type == "NORTH") {
-        mission = NORTH;
-        missionNotStarted = false;
-      } else if (type == "SOUTH") {
-        mission = SOUTH;
-        missionNotStarted = false;
-      }
-    }
-    // Wait until the hamal authorizes the platform to start moving.
-    while(MoveNotStarted) {
-      String command = nagmash.getGenericPlatform().listen();
-      if (nagmash.getGenericPlatform().needToStop()) {
-        nagmash.getGenericPlatform().endMission();
-        break;
-      }
-      String type = command.substring(0, command.indexOf('|'));
-      if (type == "GO") {
-        MoveNotStarted = false;
-      }
-    }
-
-    // Run the route selected during the mission setup phase.
-    if (mission == NORTH) {
-        northLoop();
-    } else if (mission == SOUTH) {
-        southLoop();
-    }
+  nagmash.getServoScanner().getServo().write(50);
+  delay(1000);
+  nagmash.getServoScanner().getServo().write(135);
+  delay(1000);
 }
 

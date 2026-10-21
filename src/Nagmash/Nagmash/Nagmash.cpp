@@ -9,7 +9,7 @@ NagmashPlatform::NagmashPlatform(
 
 )
   : genericPlatform(basePlatform),
-    servoScanner(servoPin),
+    servoScanner(servoPin, 80, 150, 17, 150),
     mp3Player(mp3TXPin, mp3RXPin)
 {}
 
@@ -25,7 +25,10 @@ GenericPlatform& NagmashPlatform::getGenericPlatform() {
 }
 
 void NagmashPlatform::bomb() {
-    servoScanner.moveToAngle(90);
+    servoScanner.moveToAngle(50);
+    delay(3000);
+    servoScanner.returnHome();
+
 }
 
 void NagmashPlatform::mp3Play() {
@@ -33,5 +36,12 @@ void NagmashPlatform::mp3Play() {
 }
 
 void NagmashPlatform::mp3Stop() {
+    Serial.println("Stopping MP3 player");
     mp3Player.stop();
+    Serial.println("MP3 player stopped");
 }
+
+ServoScanner& NagmashPlatform::getServoScanner() {
+    return servoScanner;
+}
+

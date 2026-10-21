@@ -25,6 +25,7 @@ public:
     void mp3Play();
     void mp3Stop();
     GenericPlatform& getGenericPlatform();
+    ServoScanner& getServoScanner();
 };
 
 #endif

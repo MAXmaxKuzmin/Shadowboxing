@@ -25,7 +25,7 @@ GenericPlatform platform(
   7, 8, 5, //Right motor IN1, IN2, EN
   A4, A5, //IR sensors, left, right
   9, 10, //Lora TX, RX
-  11, 12, //Ultrasonic TRIG, ECHO
+  13, 4, //Ultrasonic TRIG, ECHO
   12, //IR receiver
   300, //Threshold
   "NAG" //name
@@ -34,8 +34,8 @@ GenericPlatform platform(
 // Add the D9-specific sensors and actuators to the shared platform.
 NagmashPlatform nagmash(
     platform,
-    9, // MP3 TX pin
-    10, // MP3 RX pin
+    2, // MP3 TX pin
+    3, // MP3 RX pin
     11 // Servo pin
 );
 
@@ -53,7 +53,7 @@ void northLoop() {
 }
 
 void southLoop() {
-    // nagmash.mp3Play();
+    nagmash.mp3Play();
     nagmash.getGenericPlatform().driveUntilFoundIR(11);
     // nagmash.bomb();
     delay(2000);

@@ -24,7 +24,7 @@ GenericPlatform platform(
   7, 8, 6, //Left motor IN1, IN2, EN
   7, 8, 5, //Right motor IN1, IN2, EN
   A4, A5, //IR sensors, left, right
-  9, 10, //Lora TX, RX
+  A0, A1, //lora communication: TX, RX
   13, 4, //Ultrasonic TRIG, ECHO
   12, //IR receiver
   300, //Threshold
@@ -36,7 +36,7 @@ NagmashPlatform nagmash(
     platform,
     2, // MP3 TX pin
     3, // MP3 RX pin
-    11 // Servo pin
+    10 // Servo pin
 );
 
 // Initializes serial diagnostics and all platform hardware.
@@ -55,10 +55,8 @@ void northLoop() {
 void southLoop() {
     nagmash.mp3Play();
     nagmash.getGenericPlatform().driveUntilFoundIR(11);
-    // nagmash.bomb();
-    delay(2000);
+    nagmash.bomb();
     nagmash.getGenericPlatform().driveUntilFoundIR(13);
-    delay(2000);
     nagmash.mp3Stop();
     nagmash.getGenericPlatform().endMission();
 }

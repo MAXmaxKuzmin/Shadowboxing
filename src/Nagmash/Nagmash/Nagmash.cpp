@@ -25,8 +25,9 @@ GenericPlatform& NagmashPlatform::getGenericPlatform() {
 }
 
 void NagmashPlatform::bomb() {
+    genericPlatform.driveForXseconds(3);
     servoScanner.moveToAngle(50);
-    delay(3000);
+    genericPlatform.driveForXseconds(2);
     servoScanner.returnHome();
 
 }

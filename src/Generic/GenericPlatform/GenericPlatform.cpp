@@ -218,3 +218,17 @@ void GenericPlatform::driveUntilTheEnd() {
 bool GenericPlatform::needToStop() {
   return stop;
 }
+
+
+void GenericPlatform::driveForXseconds(int seconds) {
+  unsigned long startTime = millis();
+  while (millis() - startTime < seconds * 1000) {
+    updateDrive();
+    listen();
+    if (needToStop()) {
+      endMission();
+      break;
+    }
+    sendLocationIfDue();
+  }
+}

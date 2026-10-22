@@ -47,6 +47,7 @@ public:
   void endMission();
   void driveUntilTheEnd();
   bool needToStop();
+  void driveForXseconds(int seconds);
 };
 
 #endif
